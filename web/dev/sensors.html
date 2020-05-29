@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Sming Framework WiFi Network configuration</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap.css" rel="stylesheet">
+    <script src="jquery.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<script>
+      $(document).ready(function () {
+          App.GetSensors();
+      });
+
+      var App = {
+          GetSensorsURL: '/ajax/sensors',
+          GetSensors: function () {
+              (function worker() {
+                  var ajax = $.ajax({
+                      url: App.GetSensorsURL,
+                      type: 'POST',
+                      data: {
+                          'reconnect': false
+                      },
+                      success: function (data) {
+			  console.log(data.temperature);
+			  $('#sensor-temperature').html(data.temperature);
+                      }
+                  })
+                  .done(function () {
+
+                  })
+                  .fail(function () {
+                        setTimeout(worker, 5000);
+                  });
+
+              })();
+          }
+  
+      }
+	</script>
+
+<body>
+
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills pull-right">
+                <li role="presentation"><a href="/">Networks</a></li>
+                <li role="presentation" class="active"><a href="/sensors">Sensors</a></li>
+                <li role="presentation"><a href="/ipconfig">Settings</a></li>
+            </ul>
+        </nav>
+        <h3 class="text-muted">Sming Based</h3>
+    </div>
+
+    <div class="jumbotron">
+        <h1>Sensors</h1>
+        <p class="lead">Measured data
+        </p>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-md-offset-3">
+
+        <h2>Data</h2>
+        Temperature: <span id="sensor-temperature">{temperature}</span>     
+        </div>
+    </div>
+    <footer class="footer">
+        <!--<p>&copy; Company 2014</p>-->
+    </footer>
+
+</div> <!-- /container -->
+</body>
+</html>

@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Sming Framework WiFi Network configuration</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap.css" rel="stylesheet">
+    <script src="jquery.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<script>
+
+      var switchesInit = false;
+
+      $(document).ready(function () {
+          App.GetSensors();
+          
+	$('#switches').on('click', 'button', function() {
+	  console.log('ttttt');
+	  var switch_id = $(this).attr('id');
+	  var new_state = $(this).data('state') > 0 ? 0 : 1;
+	  $.ajax({url: App.GetSensorsURL, type: 'GET', data: {
+	    'gpio': switch_id.replace('gpio',''),
+	    'set_value': new_state
+	  }
+	  });
+	});
+      });
+      
+
+
+      var App = {
+          GetSensorsURL: '/ajax/sensors',
+          GetSensors: function () {
+              (function worker() {
+                  var ajax = $.ajax({
+                      url: App.GetSensorsURL,
+                      type: 'POST',
+                      data: {
+                          'reconnect': false
+                      },
+                      success: function (data) {
+			  //console.log(data.temperature);
+			  $('#sensors-temperature').empty();
+
+			  
+			  for (var i = 0; i < data.sensors.length; i++) {
+			    $('#sensors-temperature').append($('<div/>').html("Sensor " + data.sensors[i].id + " temperature " + i + ": " + data.sensors[i].temperature));
+			  }
+			  
+			  if (!switchesInit) {
+			    $('#switches').empty();
+			    for (var i = 0; i < data.switches.length; i++) {
+			      var switch_id = data.switches[i].id;
+			      var switch_state = data.switches[i].value;
+			      var label = $("<label>Switch " + switch_id + " </label>");
+			      var state = $("<span/>").attr('id', 'state-'+switch_id);
+			    
+			      var button = $('<button/>').attr('id', switch_id).html('ON/OFF');
+			      var div = $('<div/>');
+			    
+			      div.append(label);
+			      div.append(state);
+			      div.append(button);
+			      $('#switches').append(div);
+			    }
+			    
+			    
+			    switchesInit = true;
+			  }
+			  
+			  for (var i = 0; i < data.switches.length; i++) {
+			    var switch_id = data.switches[i].id;
+			    var switch_state = data.switches[i].value;
+			    
+
+
+			    $('button#'+switch_id).data('state', switch_state);
+			    
+			  }
+                      }
+                  })
+                  .done(function () {
+			setTimeout(worker, 5000);
+                  })
+                  .fail(function () {
+                        setTimeout(worker, 5000);
+                  });
+
+              })();
+          }
+  
+      }
+	</script>
+
+<body>
+
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills pull-right">
+                <li role="presentation"><a href="/">Networks</a></li>
+                <li role="presentation" class="active"><a href="/sensors">Sensors</a></li>
+                <li role="presentation"><a href="/ipconfig">Settings</a></li>
+            </ul>
+        </nav>
+        <h3 class="text-muted">Sming Based</h3>
+    </div>
+
+    <div class="jumbotron">
+        <h1>Sensors</h1>
+        <p class="lead">Measured data
+        </p>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-md-offset-3">
+
+        <h2>Data</h2>
+        <div id="sensors-temperature"></div>
+	<h2>Switches</h2>
+	<div id="switches"></div>
+        </div>
+    </div>
+    <footer class="footer">
+        <!--<p>&copy; Company 2014</p>-->
+    </footer>
+
+</div> <!-- /container -->
+</body>
+</html>
